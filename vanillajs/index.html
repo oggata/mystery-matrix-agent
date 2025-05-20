@@ -1,0 +1,2428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Adventure Game</title>
+    <style>
+        :root {
+            --primary-color: #3a506b;
+            --secondary-color: #5bc0be;
+            --background-color: #0b132b;
+            --text-color: #ffffff;
+            --accent-color: #6fffe9;
+            --error-color: #ff6b6b;
+            --success-color: #5cb85c;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            color: var(--accent-color);
+            margin-bottom: 10px;
+        }
+
+        .api-key-section {
+            background-color: var(--primary-color);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        input[type="text"],
+        input[type="password"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid var(--secondary-color);
+            border-radius: 5px;
+            background-color: #1c2541;
+            color: var(--text-color);
+            font-size: 16px;
+        }
+
+        button {
+            background-color: var(--secondary-color);
+            color: var(--background-color);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        button:hover {
+            background-color: var(--accent-color);
+        }
+
+        .game-section {
+            display: none;
+            background-color: var(--primary-color);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .game-setup {
+            margin-bottom: 20px;
+        }
+
+        .game-interface {
+            display: none;
+        }
+
+        .game-output {
+            background-color: #1c2541;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            height: 300px;
+            overflow-y: auto;
+            line-height: 1.6;
+            white-space: pre-wrap;
+        }
+
+        .action-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            background-color: var(--primary-color);
+            border: 2px solid var(--secondary-color);
+            padding: 8px 15px;
+            transition: all 0.3s ease;
+        }
+
+        .action-btn:hover {
+            background-color: var(--secondary-color);
+            color: var(--background-color);
+        }
+
+        .game-controls {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+        }
+
+        .tab {
+            padding: 10px 20px;
+            background-color: #1c2541;
+            cursor: pointer;
+            border-radius: 5px 5px 0 0;
+            margin-right: 5px;
+        }
+
+        .tab.active {
+            background-color: var(--secondary-color);
+            color: var(--background-color);
+        }
+
+        .tab-content {
+            display: none;
+            background-color: #1c2541;
+            padding: 20px;
+            border-radius: 0 5px 5px 5px;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .inventory-item, .clue-item {
+            background-color: var(--primary-color);
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            border-left: 5px solid var(--secondary-color);
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .loading-spinner {
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid var(--secondary-color);
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 2s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error-message, .success-message {
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+        }
+
+        .error-message {
+            background-color: rgba(255, 107, 107, 0.2);
+            border: 1px solid var(--error-color);
+            color: var(--error-color);
+        }
+
+        .success-message {
+            background-color: rgba(92, 184, 92, 0.2);
+            border: 1px solid var(--success-color);
+            color: var(--success-color);
+        }
+
+        .hidden {
+            display: none;
+        }
+        
+        /* Style for character dialog */
+        .character-dialog {
+            background-color: #2a3950;
+            border-left: 4px solid var(--accent-color);
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 0 5px 5px 0;
+        }
+        
+        .character-name {
+            font-weight: bold;
+            color: var(--accent-color);
+            margin-bottom: 5px;
+        }
+        
+        .narrative {
+            font-style: italic;
+            color: #d1d1d1;
+        }
+        
+        /* Tooltip for inventory and clues */
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 200px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 5px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -100px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+        
+        /* Mobile responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .action-container {
+                flex-direction: column;
+            }
+            
+            .game-controls {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .tab {
+                padding: 8px 12px;
+                font-size: 14px;
+            }
+        }
+
+        /* Debug console */
+        .debug-console {
+            background-color: #1a1a1a;
+            color: #00ff00;
+            font-family: monospace;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 20px;
+            height: 100px;
+            overflow-y: auto;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>AI Adventure Game</h1>
+            <p>An immersive narrative adventure game powered by AI</p>
+        </header>
+
+        <!-- API Key Section -->
+        <section id="apiKeySection" class="api-key-section">
+            <h2>Setup Your Adventure</h2>
+            <p>To start your adventure, please enter your OpenAI API key.</p>
+            
+            <div class="input-group">
+                <label for="apiKey">OpenAI API Key:</label>
+                <input type="password" id="apiKey" placeholder="sk-...">
+            </div>
+            
+            <div id="apiKeyError" class="error-message hidden"></div>
+            <div id="apiKeySuccess" class="success-message hidden"></div>
+            
+            <button id="verifyApiKey">Verify API Key</button>
+        </section>
+
+        <!-- Game Setup Section -->
+        <section id="gameSetupSection" class="game-section">
+            <h2>Create Your Adventure</h2>
+            
+            <div class="game-setup">
+                <div class="input-group">
+                    <label for="gameTheme">Theme:</label>
+                    <select id="gameTheme">
+                        <option value="murder-mystery">Murder Mystery</option>
+                        <option value="fantasy-adventure">Fantasy Adventure</option>
+                        <option value="sci-fi-exploration">Sci-Fi Exploration</option>
+                        <option value="detective-noir">Detective Noir</option>
+                        <option value="supernatural-horror">Supernatural Horror</option>
+                        <option value="historical-mystery">Historical Mystery</option>
+                        <option value="custom">Custom Theme...</option>
+                    </select>
+                </div>
+                
+                <div id="customThemeGroup" class="input-group hidden">
+                    <label for="customTheme">Custom Theme:</label>
+                    <input type="text" id="customTheme" placeholder="Enter your custom theme">
+                </div>
+                
+                <div class="input-group">
+                    <label for="playerName">Your Character Name (optional):</label>
+                    <input type="text" id="playerName" placeholder="Detective Smith">
+                </div>
+                
+                <div id="gameSetupError" class="error-message hidden"></div>
+                
+                <button id="createGame">Create Game</button>
+            </div>
+            
+            <div id="loadingGame" class="loading">
+                <p>Crafting your adventure...</p>
+                <div class="loading-spinner"></div>
+                <p>This might take a minute. Preparing story elements, characters, and setting...</p>
+            </div>
+        </section>
+
+        <!-- Game Interface Section -->
+        <section id="gameSection" class="game-section">
+            <div class="tabs">
+                <div class="tab active" data-tab="game">Game</div>
+                <div class="tab" data-tab="inventory">Inventory</div>
+                <div class="tab" data-tab="clues">Clues</div>
+                <div class="tab" data-tab="characters">Characters</div>
+                <div class="tab" data-tab="help">Help</div>
+            </div>
+            
+            <div id="gameTab" class="tab-content active">
+                <div class="game-output" id="gameOutput"></div>
+                
+                <div class="action-container" id="actionContainer"></div>
+                
+                <div id="customActions" class="input-group">
+                    <label for="customAction">Custom Action:</label>
+                    <div style="display: flex; gap: 10px;">
+                        <select id="actionType" style="flex: 1;">
+                            <option value="move">Move to</option>
+                            <option value="examine">Examine</option>
+                            <option value="search">Search</option>
+                            <option value="ask">Ask about</option>
+                            <option value="talk">Talk to</option>
+                            <option value="take">Take</option>
+                            <option value="look">Look at</option>
+                            <option value="show">Show</option>
+                            <option value="call">Call</option>
+                        </select>
+                        <input type="text" id="actionTarget" placeholder="Target" style="flex: 2;">
+                        <button id="performAction">Do Action</button>
+                    </div>
+                </div>
+                
+                <div class="game-controls">
+                    <button id="getHint">Get Hint</button>
+                    <button id="saveGame">Save Game</button>
+                    <button id="loadGame">Load Game</button>
+                </div>
+            </div>
+            
+            <div id="inventoryTab" class="tab-content">
+                <h3>Your Inventory</h3>
+                <div id="inventoryItems"></div>
+            </div>
+            
+            <div id="cluesTab" class="tab-content">
+                <h3>Discovered Clues</h3>
+                <div id="clueItems"></div>
+                <button id="analyzeClues">Analyze Clues</button>
+                <div id="clueAnalysis" class="hidden"></div>
+            </div>
+            
+            <div id="charactersTab" class="tab-content">
+                <h3>Characters</h3>
+                <div id="characterList"></div>
+            </div>
+            
+            <div id="helpTab" class="tab-content">
+                <h3>Game Help</h3>
+                <div id="gameHelp"></div>
+            </div>
+            
+            <div id="loadingAction" class="loading">
+                <div class="loading-spinner"></div>
+                <p>Processing your action...</p>
+            </div>
+        </section>
+
+        <!-- Debug Console (hidden by default) -->
+        <div id="debugConsole" class="debug-console"></div>
+    </div>
+
+    <script>
+        /**
+         * Adventure Game Engine
+         * A JavaScript implementation of the adventure game engine
+         * inspired by the Python LangGraph-based implementation
+         */
+        class AdventureGameEngine {
+            constructor() {
+                this.apiKey = null;
+                this.gameState = null;
+                this.story = null;
+                
+                // State managers for consistency
+                this.storyManager = new StoryConsistencyManager();
+                this.characterManager = new CharacterConsistencyManager();
+                this.dialogueManager = new DialogueConsistencyManager();
+                
+                // Action definitions
+                this.ACTIONS = {
+                    "move": "へ移動",
+                    "examine": "診る",
+                    "search": "探す",
+                    "ask": "について尋ねる",
+                    "talk": "話す",
+                    "take": "取る",
+                    "look": "見る",
+                    "show": "見せる",
+                    "call": "電話"
+                };
+
+                // Debug mode
+                this.debugMode = false;
+
+                this.debugCharacters = () => {
+                    console.log("=== キャラクターデバッグ情報 ===");
+                    console.log("ストーリーキャラクター:", this.story?.characters);
+                    console.log("ゲーム状態キャラクター:", this.gameState?.characters);
+                    console.log("出会ったキャラクター:", this.gameState?.game_progress?.met_characters);
+                    console.log("========================");
+                };
+            }
+            
+            /**
+             * Set the OpenAI API key
+             * @param {string} apiKey The OpenAI API key
+             */
+            setApiKey(apiKey) {
+                this.apiKey = apiKey;
+            }
+
+            /**
+             * Toggle debug mode
+             * @param {boolean} enabled Enable or disable debug mode
+             */
+            setDebugMode(enabled) {
+                this.debugMode = enabled;
+                const debugConsole = document.getElementById('debugConsole');
+                if (debugConsole) {
+                    debugConsole.style.display = enabled ? 'block' : 'none';
+                }
+            }
+
+            /**
+             * Log debug message
+             * @param {string} message Debug message
+             */
+            debug(message) {
+                if (!this.debugMode) return;
+                
+                const debugConsole = document.getElementById('debugConsole');
+                if (debugConsole) {
+                    const timestamp = new Date().toISOString().substr(11, 8);
+                    debugConsole.innerHTML += `<div>[${timestamp}] ${message}</div>`;
+                    debugConsole.scrollTop = debugConsole.scrollHeight;
+                }
+                
+                console.log(`[DEBUG] ${message}`);
+            }
+            
+            /**
+             * Verify the API key is valid
+             * @returns {Promise<boolean>} True if the API key is valid
+             */
+            async verifyApiKey() {
+                try {
+                    const response = await fetch('https://api.openai.com/v1/models', {
+                        headers: {
+                            'Authorization': `Bearer ${this.apiKey}`
+                        }
+                    });
+                    
+                    if (!response.ok) {
+                        if (response.status === 401) {
+                            throw new Error("Invalid API key. Please check your key and try again.");
+                        }
+                        throw new Error(`API error: ${response.status}`);
+                    }
+                    
+                    return true;
+                } catch (error) {
+                    console.error("API Key verification failed:", error);
+                    throw error;
+                }
+            }
+            
+            /**
+             * Create a new game with the given theme
+             * @param {string} theme Game theme
+             * @param {string} playerName Optional player name
+             * @returns {Promise<Object>} The initial game state
+             */
+            async createGame(theme, playerName = "Player") {
+                try {
+                    this.debug(`Creating game with theme: ${theme}`);
+                    
+                    // Generate the story based on the theme
+                    const story = await this._generateStory(theme);
+                    this.story = story;
+                    
+                    this.debug(`Story generated successfully: ${story.title}`);
+                    
+                    // Register the story with the managers for consistency
+                    this.storyManager.setStory(story);
+                    this.characterManager.setCharacters(story.characters);
+                    
+                    // Create the initial game state
+                    this.gameState = {
+                        messages: [],
+                        current_scene: "opening",
+                        inventory: [],
+                        discovered_clues: [],
+                        game_progress: {},
+                        available_actions: await this._getAvailableActions("opening"),
+                        story_context: story,
+                        characters: this._createCharacterDict(story.characters),
+                        locations: this._createLocationDict(story.locations),
+                        player_name: playerName
+                    };
+                    
+                    // Add an opening message
+                    this.gameState.messages.push({
+                        type: "system",
+                        content: `Welcome to "${story.title}", ${playerName}! Your adventure begins now...`
+                    });
+                    
+                    // Get the opening scene description
+                    const initialScene = await this.getInitialScene();
+                    this.debugCharacters();
+                    return initialScene;
+                } catch (error) {
+                    console.error("Error creating game:", error);
+                    throw error;
+                }
+            }
+            
+            /**
+             * Get the initial scene description and available actions
+             * @returns {Promise<Object>} The initial scene information
+             */
+            async getInitialScene() {
+                try {
+                    const { description, available_actions } = await this._getSceneInfo(this.gameState.current_scene);
+                    
+                    // Add the scene description to messages
+                    this.gameState.messages.push({
+                        type: "narrative",
+                        content: description
+                    });
+                    
+                    this.gameState.available_actions = available_actions;
+                    
+                    return {
+                        description,
+                        available_actions
+                    };
+                } catch (error) {
+                    console.error("Error getting initial scene:", error);
+                    throw error;
+                }
+            }
+            
+            /**
+             * Process a player action
+             * @param {string} action The action type (move, examine, etc.)
+             * @param {string} target The target of the action
+             * @returns {Promise<Object>} The result of the action
+             */
+            async processAction(action, target) {
+                try {
+                    this.debug(`アクション処理: ${action} ${target}`);
+                    
+                    // プレイヤーのアクションをメッセージに追加
+                    this.gameState.messages.push({
+                        type: "player",
+                        content: `${action} ${target}`,
+                        action,
+                        target
+                    });
+                    
+                    // アクションを処理
+                    const result = await this._processAction(this.gameState, action, target);
+                    
+                    // ゲーム状態を更新
+                    this.gameState = result;
+                    
+                    return this.gameState;
+                } catch (error) {
+                    console.error("アクション処理エラー:", error);
+                    throw error;
+                }
+            }
+
+            async _processAction(state, action, target) {
+                try {
+                    this.debug(`アクション処理: ${action} ${target}`);
+                    
+                    // OpenAI APIを使用してアクションを処理
+                    const messages = [
+                        {
+                            role: "system",
+                            content: "あなたは、プレイヤーのアクションを処理するアドベンチャーゲームエンジンです。レスポンスを有効なJSONとして返してください。レスポンスにバックスティック（`）やその他の書式を使用しないでください。言語は日本語で書いてください。"
+                        },
+                        {
+                            role: "user",
+                            content: `プレイヤーのアクションを処理:
+                            
+アクション: ${action}
+ターゲット: ${target}
+現在のシーン: ${state.current_scene}
+ストーリーコンテキスト: ${JSON.stringify(this.story)}
+インベントリ: ${JSON.stringify(state.inventory)}
+発見した手がかり: ${JSON.stringify(state.discovered_clues)}
+ゲームの進行: ${JSON.stringify(state.game_progress)}
+
+結果をJSON形式で返してください:
+{
+    "next_scene": "次のシーンのID",
+    "description": "何が起こったかの詳細な説明",
+    "new_clues": ["発見された新しい手がかり"],
+    "new_items": ["取得された新しいアイテム"],
+    "available_actions": ["このアクションの後に利用可能なアクション"]
+}`
+                        }
+                    ];
+                    
+                    const completion = await this._callOpenAI(messages);
+                    const result = this._safeParseJSON(completion);
+                    
+                    this.debug(`アクション処理結果: ${JSON.stringify(result)}`);
+                    
+                    // 新しい手がかりを追加
+                    if (result.new_clues && result.new_clues.length > 0) {
+                        this.debug(`新しい手がかり: ${JSON.stringify(result.new_clues)}`);
+                        
+                        for (const clue of result.new_clues) {
+                            // 手がかりが既に存在するかチェック（IDまたは名前で）
+                            const existingClue = state.discovered_clues.find(
+                                c => c === clue || this.story.clues.find(sc => sc.id === c || sc.name === c)
+                            );
+                            
+                            if (!existingClue) {
+                                state.discovered_clues.push(clue);
+                                
+                                // 手がかりの詳細を見つける（IDまたは名前で検索）
+                                let clueDetails = this.story.clues.find(c => c.id === clue);
+                                if (!clueDetails) {
+                                    clueDetails = this.story.clues.find(c => c.name === clue);
+                                }
+                                
+                                // 手がかり発見メッセージを追加
+                                state.messages.push({
+                                    type: "system",
+                                    content: `新しい手がかりを発見: ${clueDetails ? clueDetails.name : clue}`,
+                                    clue: true
+                                });
+                            }
+                        }
+                    }
+                    
+                    // 新しいアイテムを追加
+                    if (result.new_items && result.new_items.length > 0) {
+                        this.debug(`新しいアイテム: ${JSON.stringify(result.new_items)}`);
+                        
+                        for (const item of result.new_items) {
+                            if (!state.inventory.includes(item)) {
+                                state.inventory.push(item);
+                                
+                                // アイテム取得メッセージを追加
+                                state.messages.push({
+                                    type: "system",
+                                    content: `アイテムを獲得: ${item}`,
+                                    item: true
+                                });
+                            }
+                        }
+                    }
+                    
+                    // キャラクターとの遭遇を処理
+                    if (action === "talk" || action === "ask") {
+                        if (!state.game_progress.met_characters) {
+                            state.game_progress.met_characters = [];
+                        }
+
+                        let characterId = target;
+                        if (action === "ask" && target.includes(" about ")) {
+                            characterId = target.split(" about ")[0];
+                        }
+
+                        // 名前→ID変換
+                        let charObj = this.story.characters.find(
+                            c => c.id === characterId || c.name === characterId
+                        );
+                        if (charObj) characterId = charObj.id;
+
+                        if (characterId && !state.game_progress.met_characters.includes(characterId)) {
+                            state.game_progress.met_characters.push(characterId);
+                        }
+                    }
+                    
+                    // 利用可能なアクションを更新
+                    state.available_actions = result.available_actions;
+                    
+                    // 次のシーンを設定
+                    if (result.next_scene) {
+                        state.current_scene = result.next_scene;
+                    }
+                    
+                    // アクションの結果をメッセージに追加
+                    state.messages.push({
+                        type: "narrative",
+                        content: result.description
+                    });
+                    
+                    // ストーリー内で登場したキャラクターを検出して追加
+                    if (result.description) {
+                        // ストーリー内のキャラクターを検出
+                        const mentionedCharacters = this.story.characters.filter(character => 
+                            result.description.includes(character.name)
+                        );
+
+                        // met_characters配列を初期化（存在しない場合）
+                        if (!state.game_progress.met_characters) {
+                            state.game_progress.met_characters = [];
+                        }
+
+                        // 検出したキャラクターを追加
+                        for (const character of mentionedCharacters) {
+                            if (!state.game_progress.met_characters.includes(character.id)) {
+                                state.game_progress.met_characters.push(character.id);
+                                this.debug(`ストーリー内でキャラクターを検出: ${character.name} (${character.id})`);
+                            }
+                        }
+                    }
+                    
+                    return state;
+                } catch (error) {
+                    console.error("アクション処理エラー:", error);
+                    throw error;
+                }
+            }
+            
+            /**
+             * Get information about a character
+             * @param {string} characterId The character ID
+             * @returns {Object} The character information
+             */
+            getCharacterInfo(characterId) {
+                return this.gameState.characters[characterId] || null;
+            }
+            
+            /**
+             * Get information about a location
+             * @param {string} locationId The location ID
+             * @returns {Object} The location information
+             */
+            getLocationInfo(locationId) {
+                return this.gameState.locations[locationId] || null;
+            }
+            
+            /**
+             * Get the list of discovered clues
+             * @returns {Array} The discovered clues
+             */
+            getDiscoveredClues() {
+                return this.gameState.discovered_clues;
+            }
+            
+            /**
+             * Get the inventory contents
+             * @returns {Array} The inventory items
+             */
+            getInventory() {
+                return this.gameState.inventory;
+            }
+            
+            /**
+             * Get the game help information
+             * @returns {Promise<Object>} The game help information
+             */
+            async getGameHelp() {
+                const helpInfo = {
+                    available_actions: {
+                        move: "Move to a different location",
+                        examine: "Examine an object or person in detail",
+                        search: "Search the current area",
+                        ask: "Ask someone about a topic",
+                        talk: "Talk to a character",
+                        take: "Take an item",
+                        look: "Look at something",
+                        show: "Show an item to someone",
+                        call: "Call someone on the phone"
+                    },
+                    game_mechanics: {
+                        inventory: "Manage your inventory of collected items",
+                        clues: "Review discovered clues",
+                        relationships: "Track relationships between characters",
+                        locations: "Explore different locations",
+                        story_progress: "Follow the story progress"
+                    },
+                    tips: [
+                        "Carefully examine all clues you find",
+                        "Talk to characters to gather information",
+                        "Use items at the right time and place",
+                        "Thoroughly explore locations before moving on",
+                        "Combine clues to make new discoveries",
+                        "Pay attention to character reactions and emotions",
+                        "Don't forget to check your inventory regularly"
+                    ]
+                };
+                
+                return helpInfo;
+            }
+            
+            /**
+             * Generate a hint based on the current game state
+             * @param {string} difficulty The hint difficulty
+             * @returns {Promise<Object>} The hint information
+             */
+            async getHint(difficulty = "normal") {
+                try {
+                    const messages = [
+                        {
+                            role: "system",
+                            content: "あなたは、役立つヒントを提供するアドベンチャーゲームのアシスタントです。レスポンスを有効なJSONとして返してください。レスポンスにバックスティック（`）やその他の書式を使用しないでください。言語は日本語で書いてください。"
+                        },
+                        {
+                            role: "user",
+                            content: `Generate a hint for the player based on their current game state:
+                            
+Story context: ${JSON.stringify(this.story)}
+Current scene: ${this.gameState.current_scene}
+Discovered clues: ${JSON.stringify(this.gameState.discovered_clues)}
+Inventory: ${JSON.stringify(this.gameState.inventory)}
+Game progress: ${JSON.stringify(this.gameState.game_progress)}
+Difficulty level: ${difficulty}
+
+Provide a hint that helps them progress without giving away too much. Format as JSON:
+{
+    "hint": "The hint content",
+    "relevance": "Why this hint is relevant now",
+    "next_action": "Suggested next action",
+    "difficulty_level": "${difficulty}"
+}`
+                        }
+                    ];
+                    
+                    const completion = await this._callOpenAI(messages);
+                    const hintData = this._safeParseJSON(completion);
+                    
+                    // Add the hint to messages
+                    this.gameState.messages.push({
+                        type: "system",
+                        content: `HINT: ${hintData.hint}`,
+                        hint: true
+                    });
+                    
+                    return hintData;
+                } catch (error) {
+                    console.error("Error getting hint:", error);
+                    throw error;
+                }
+            }
+            
+            /**
+             * Analyze the discovered clues
+             * @returns {Promise<Object>} The analysis results
+             */
+            async analyzeClues() {
+                try {
+                    const messages = [
+                        {
+                            role: "system",
+                            content: "あなたは手がかりを分析するアドベンチャーゲームのアシスタントです。レスポンスを有効なJSONとして返してください。レスポンスにバックスティック（`）やその他の書式を使用しないでください。言語は日本語で書いてください。"
+                        },
+                        {
+                            role: "user",
+                            content: `Analyze the clues the player has discovered:
+                            
+Story context: ${JSON.stringify(this.story)}
+Discovered clues: ${JSON.stringify(this.gameState.discovered_clues)}
+Game progress: ${JSON.stringify(this.gameState.game_progress)}
+
+Return your analysis in JSON format:
+{
+    "analysis": "Detailed analysis of the clues",
+    "connections": ["Connections between different clues"],
+    "theories": ["Possible theories based on the clues"],
+    "next_investigations": ["Suggested next investigation steps"]
+}`
+                        }
+                    ];
+                    
+                    const completion = await this._callOpenAI(messages);
+                    const analysisData = this._safeParseJSON(completion);
+                    
+                    // Add the analysis to messages
+                    this.gameState.messages.push({
+                        type: "system",
+                        content: `CLUE ANALYSIS: ${analysisData.analysis}`,
+                        analysis: true
+                    });
+                    
+                    return analysisData;
+                } catch (error) {
+                    console.error("Error analyzing clues:", error);
+                    throw error;
+                }
+            }
+            
+            /**
+             * Generate dialogue with a character
+             * @param {string} characterId The character ID
+             * @param {string} topic Optional topic
+             * @returns {Promise<Object>} The dialogue result
+             */
+            async getCharacterDialogue(characterId, topic = null) {
+                try {
+                    const character = this.getCharacterInfo(characterId);
+                    
+                    if (!character) {
+                        throw new Error(`キャラクター${characterId}が見つかりません`);
+                    }
+                    
+                    // このキャラクターをmet_charactersに追加することを確認
+                    if (!this.gameState.game_progress.met_characters) {
+                        this.gameState.game_progress.met_characters = [];
+                    }
+                    if (!this.gameState.game_progress.met_characters.includes(characterId)) {
+                        this.gameState.game_progress.met_characters.push(characterId);
+                    }
+                    
+                    // 一貫性を確保するためにダイアログマネージャーを使用
+                    const dialogueContext = this.dialogueManager.getDialogueContext(characterId);
+                    
+                    const messages = [
+                        {
+                            role: "system",
+                            content: "アドベンチャーゲームのキャラクターのダイアログを生成しています。レスポンスを有効なJSONとして返してください。レスポンスにバックスティック（`）やその他の書式を使用しないでください。言語は日本語で書いてください。"
+                        },
+                        {
+                            role: "user",
+                            content: `キャラクターのダイアログを生成:
+                            
+キャラクター情報: ${JSON.stringify(character)}
+現在のシーン: ${this.gameState.current_scene}
+発見した手がかり: ${JSON.stringify(this.gameState.discovered_clues)}
+前回の対話コンテキスト: ${JSON.stringify(dialogueContext)}
+トピック: ${topic || '一般的な会話'}
+
+ダイアログをJSON形式で返してください:
+{
+    "dialogue": "キャラクターのダイアログ",
+    "emotion": "キャラクターの感情状態",
+    "hints": ["ダイアログで提供されたヒント"],
+    "next_topics": ["次の会話の潜在的なトピック"]
+}`
+                        }
+                    ];
+                    
+                    const completion = await this._callOpenAI(messages);
+                    const dialogueData = this._safeParseJSON(completion);
+                    
+                    // ダイアログコンテキストを更新
+                    this.dialogueManager.updateDialogueContext(characterId, {
+                        lastTopic: topic,
+                        lastEmotion: dialogueData.emotion,
+                        lastHints: dialogueData.hints,
+                        timestamp: Date.now()
+                    });
+                    
+                    // ダイアログをメッセージに追加
+                    this.gameState.messages.push({
+                        type: "character",
+                        character: character.name,
+                        content: dialogueData.dialogue,
+                        emotion: dialogueData.emotion
+                    });
+                    
+                    // ヒントに新しい手がかりがあるかどうかを確認
+                    if (dialogueData.hints && dialogueData.hints.length > 0) {
+                        // 手がかりマネージャーを通じて新しい手がかりを処理
+                        this._processNewClues(dialogueData.hints);
+                    }
+                    
+                    return dialogueData;
+                } catch (error) {
+                    console.error("キャラクターダイアログの取得エラー:", error);
+                    throw error;
+                }
+            }
+            
+            /**
+             * Save the current game state
+             * @returns {string} JSON string of the game state
+             */
+            saveGameState() {
+                return JSON.stringify({
+                    gameState: this.gameState,
+                    story: this.story,
+                    timestamp: Date.now()
+                });
+            }
+            
+            /**
+             * Load a saved game state
+             * @param {string} savedState JSON string of a saved game state
+             */
+            loadGameState(savedState) {
+                try {
+                    const parsed = JSON.parse(savedState);
+                    this.gameState = parsed.gameState;
+                    this.story = parsed.story;
+                    
+                    // Reinitialize managers
+                    this.storyManager.setStory(this.story);
+                    this.characterManager.setCharacters(this.story.characters);
+                    
+                    return {
+                        success: true,
+                        message: "Game loaded successfully"
+                    };
+                } catch (error) {
+                    console.error("Error loading game state:", error);
+                    return {
+                        success: false,
+                        message: "Failed to load game state: " + error.message
+                    };
+                }
+            }
+            
+            /**
+             * Check if the game is completed
+             * @returns {Promise<boolean>} True if the game is completed
+             */
+            async checkGameCompletion() {
+                try {
+                    const messages = [
+                        {
+                            role: "system",
+                            content: "あなたは、完了ステータスをチェックするアドベンチャーゲームのアシスタントです。レスポンスを有効なJSONとして返してください。レスポンスにバックスティック（`）やその他の書式を使用しないでください。言語は日本語で書いてください。"
+                        },
+                        {
+                            role: "user",
+                            content: `Check if the game has been completed:
+                            
+Story context: ${JSON.stringify(this.story)}
+Discovered clues: ${JSON.stringify(this.gameState.discovered_clues)}
+Game progress: ${JSON.stringify(this.gameState.game_progress)}
+Current scene: ${this.gameState.current_scene}
+
+Return the result in JSON format:
+{
+    "is_completed": true/false,
+    "completion_percentage": 0-100,
+    "missing_elements": ["Elements needed to complete the game"],
+    "final_summary": "Summary of the game if completed"
+}`
+                        }
+                    ];
+                    
+                    const completion = await this._callOpenAI(messages);
+                    const completionData = this._safeParseJSON(completion);
+                    
+                    if (completionData.is_completed) {
+                        // Add the completion message
+                        this.gameState.messages.push({
+                            type: "system",
+                            content: `GAME COMPLETED: ${completionData.final_summary}`,
+                            completion: true
+                        });
+                    }
+                    
+                    return completionData;
+                } catch (error) {
+                    console.error("Error checking game completion:", error);
+                    throw error;
+                }
+            }
+            
+            /**
+             * Generate the story based on the theme
+             * @param {string} theme Game theme
+             * @returns {Promise<Object>} The generated story
+             */
+            async _generateStory(theme) {
+                try {
+                    this.debug(`Generating story for theme: ${theme}`);
+                    
+                    const messages = [
+                        {
+                            role: "system",
+                            content: "あなたは、没入型のストーリーを作成するアドベンチャーゲームのデザイナーです。レスポンスを有効なJSONとして返してください。レスポンスにバックスティック（`）やその他の書式を使用しないでください。言語は日本語で書いてください。"
+                        },
+                        {
+                            role: "user",
+                            content: `Create a mystery adventure game story based on the theme: ${theme}
+                            
+Include the following elements:
+1. A detailed game overview
+2. Detailed profiles of key characters
+3. A detailed story progression
+4. A flow of player actions and discoveries
+5. Specific details of evidence, artifacts, locations, and testimony
+
+Structure your output in the following JSON format:
+{
+    "title": "Game title",
+    "overview": "Game overview",
+    "characters": [
+        {
+            "id": "character_id",
+            "name": "Name",
+            "age": Age,
+            "occupation": "Occupation",
+            "personality": "Personality traits",
+            "description": "Description",
+            "relationships": {"related_character_id": "Relationship description"},
+            "knowledge": ["Information this character knows"],
+            "secrets": ["Character's secrets"]
+        }
+    ],
+    "locations": [
+        {
+            "id": "location_id",
+            "name": "Location name",
+            "description": "Location description",
+            "connected_locations": ["Connected location IDs"],
+            "items": ["Items found here"],
+            "clues": ["Clues found here"],
+            "characters": ["Character IDs present here"]
+        }
+    ],
+    "clues": [
+        {
+            "id": "clue_id",
+            "name": "Clue name",
+            "description": "Clue description",
+            "importance": Importance (1-5),
+            "related_clues": ["Related clue IDs"],
+            "related_characters": ["Related character IDs"]
+        }
+    ],
+    "story_arc": [
+        {
+            "scene_id": "scene_id",
+            "description": "Scene description",
+            "required_clues": ["Required clue IDs"],
+            "available_actions": ["Available actions"],
+            "next_scenes": ["Next scene IDs"]
+        }
+    ]
+}`
+                        }
+                    ];
+                    
+                    const completion = await this._callOpenAI(messages);
+                    this.debug("Received story data from OpenAI");
+                    
+                    try {
+                        return this._safeParseJSON(completion);
+                    } catch (error) {
+                        this.debug(`Error parsing story JSON: ${error.message}`);
+                        this.debug(`Attempting to fix JSON...`);
+                        
+                        // Try to fix common JSON issues
+                        const fixedCompletion = this._fixJSON(completion);
+                        return JSON.parse(fixedCompletion);
+                    }
+                } catch (error) {
+                    console.error("Error generating story:", error);
+                    this.debug(`Story generation error: ${error.message}`);
+                    throw error;
+                }
+            }
+            
+            /**
+             * Get information about a scene
+             * @param {string} scene Scene ID
+             * @returns {Promise<Object>} Scene information
+             */
+            async _getSceneInfo(scene) {
+                try {
+                    const messages = [
+                        {
+                            role: "system",
+                            content: "あなたはシーンを描写するアドベンチャーゲームエンジンです。レスポンスを有効なJSONとして返してください。レスポンスにバックスティック（`）やその他のフォーマットを使用しないでください。言語は日本語で書いてください。"
+                        },
+                        {
+                            role: "user",
+                            content: `現在のシーンと利用可能なアクションを説明する:
+                            
+Current scene: ${scene}
+Story context: ${JSON.stringify(this.story)}
+
+Return the scene information in JSON format:
+{
+    "description": "Detailed scene description",
+    "available_actions": [
+        {"action": "action_type", "description": "Action description", "target": "action_target"},
+        ...
+    ]
+}`
+                        }
+                    ];
+                    
+                    const completion = await this._callOpenAI(messages);
+                    return this._safeParseJSON(completion);
+                } catch (error) {
+                    console.error("Error getting scene info:", error);
+                    throw error;
+                }
+            }
+            
+            /**
+             * Create a character dictionary from an array of characters
+             * @param {Array} characters Array of character objects
+             * @returns {Object} Dictionary of characters
+             */
+            _createCharacterDict(characters) {
+                const dict = {};
+                for (const character of characters) {
+                    dict[character.id] = character;
+                }
+                return dict;
+            }
+            
+            /**
+             * Create a location dictionary from an array of locations
+             * @param {Array} locations Array of location objects
+             * @returns {Object} Dictionary of locations
+             */
+            _createLocationDict(locations) {
+                const dict = {};
+                for (const location of locations) {
+                    dict[location.id] = location;
+                }
+                return dict;
+            }
+            
+            /**
+             * Make a call to the OpenAI API
+             * @param {Array} messages Array of message objects
+             * @returns {Promise<string>} The completion text
+             */
+            async _callOpenAI(messages) {
+                try {
+                    this.debug(`OpenAI APIを呼び出し中`);
+                    
+                    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${this.apiKey}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            model: 'gpt-4o-mini',
+                            messages,
+                            temperature: 0.7,
+                            // JSON形式を強制しない - APIがテキスト形式でJSON文字列を返せるようにする
+                            response_format: { type: "text" }
+                        })
+                    });
+                    
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(`OpenAI APIエラー: ${errorData.error?.message || response.status}`);
+                    }
+                    
+                    const data = await response.json();
+                    const completion = data.choices[0].message.content;
+                    
+                    this.debug(`OpenAIからのレスポンス (${completion.length} 文字)`);
+                    
+                    return completion;
+                } catch (error) {
+                    console.error("OpenAI呼び出しエラー:", error);
+                    this.debug(`OpenAI APIエラー: ${error.message}`);
+                    throw error;
+                }
+            }
+
+            /**
+             * Safely parse JSON with error handling
+             * @param {string} jsonString The JSON string to parse
+             * @returns {Object} The parsed JSON object
+             */
+            _safeParseJSON(jsonString) {
+                try {
+                    // 最初の試み: 直接パース
+                    return JSON.parse(jsonString);
+                } catch (err) {
+                    this.debug(`JSONパースエラー: ${err.message}`);
+                    
+                    try {
+                        // 二番目の試み: マークダウンコードブロックなどからJSONを抽出
+                        const jsonMatch = jsonString.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
+                        if (jsonMatch && jsonMatch[1]) {
+                            this.debug("コードブロック内のJSONを発見、パース試行");
+                            return JSON.parse(jsonMatch[1]);
+                        }
+                        
+                        // 三番目の試み: JSONを修正
+                        this.debug("不正なJSONの修正を試みる");
+                        const fixedJson = this._fixJSON(jsonString);
+                        return JSON.parse(fixedJson);
+                    } catch (secondError) {
+                        this.debug(`全てのJSONパース試行が失敗: ${secondError.message}`);
+                        this.debug(`生のJSON文字列: ${jsonString.substring(0, 200)}...`);
+                        
+                        // 最終手段として、最小限の有効なオブジェクトを作成
+                        this.debug("フォールバックオブジェクトを作成");
+                        return {
+                            error: "レスポンスの解析に失敗しました",
+                            fallback: true,
+                            description: "ゲームデータの処理中にエラーが発生しました。もう一度やり直してください。",
+                            available_actions: []
+                        };
+                    }
+                }
+            }
+
+            /**
+             * Attempt to fix common JSON errors
+             * @param {string} jsonString The JSON string to fix
+             * @returns {string} The fixed JSON string
+             */
+            _fixJSON(jsonString) {
+                // Remove markdown code blocks if present
+                let cleaned = jsonString.replace(/```json\s+|\s+```/g, '');
+                
+                // Remove backticks
+                cleaned = cleaned.replace(/`/g, '');
+                
+                // Try to extract just the JSON part if there's extra text
+                const jsonStart = cleaned.indexOf('{');
+                const jsonEnd = cleaned.lastIndexOf('}');
+                
+                if (jsonStart !== -1 && jsonEnd !== -1) {
+                    cleaned = cleaned.substring(jsonStart, jsonEnd + 1);
+                }
+                
+                // Fix common syntax errors
+                cleaned = cleaned
+                    // Fix trailing commas in arrays and objects
+                    .replace(/,\s*([}\]])/g, '$1')
+                    // Fix missing quotes around property names
+                    .replace(/([{,]\s*)([a-zA-Z0-9_]+)(\s*:)/g, '$1"$2"$3')
+                    // Replace single quotes with double quotes
+                    .replace(/'/g, '"')
+                    // Fix strings containing unescaped quotes
+                    .replace(/"([^"]*?)\\?"/g, function(match) {
+                        return match.replace(/\\"/g, '"').replace(/"/g, '\\"');
+                    });
+                
+                return cleaned;
+            }
+
+            async _getAvailableActions(scene) {
+                try {
+                    const messages = [
+                        {
+                            role: "system",
+                            content: "あなたは、プレイヤーのアクションを処理するアドベンチャーゲームエンジンです。レスポンスを有効なJSONとして返してください。レスポンスにバックスティック（`）やその他の書式を使用しないでください。言語は日本語で書いてください。"
+                        },
+                        {
+                            role: "user",
+                            content: `現在のシーンで利用可能なアクションを取得:
+                            
+現在のシーン: ${scene}
+ストーリーコンテキスト: ${JSON.stringify(this.story)}
+インベントリ: ${JSON.stringify(this.gameState.inventory)}
+発見した手がかり: ${JSON.stringify(this.gameState.discovered_clues)}
+ゲームの進行: ${JSON.stringify(this.gameState.game_progress)}
+
+利用可能なアクションをJSON形式で返してください:
+{
+    "available_actions": [
+        {"action": "action_type", "description": "アクションの説明", "target": "アクションの対象"},
+        ...
+    ]
+}`
+                        }
+                    ];
+                    
+                    const completion = await this._callOpenAI(messages);
+                    const result = this._safeParseJSON(completion);
+                    
+                    return result.available_actions || [];
+                } catch (error) {
+                    console.error("利用可能なアクションの取得エラー:", error);
+                    return [];
+                }
+            }
+        }
+        
+        /**
+         * Story Consistency Manager
+         * Ensures consistent story progression
+         */
+        class StoryConsistencyManager {
+            constructor() {
+                this.story = null;
+                this.storyTimeline = new Map();
+                this.lastUpdate = null;
+            }
+            
+            /**
+             * Set the story data
+             * @param {Object} story The story object
+             */
+            setStory(story) {
+                this.story = story;
+                this.buildStoryTimeline();
+                this.lastUpdate = Date.now();
+            }
+            
+            /**
+             * Build a timeline of the story progression
+             */
+            buildStoryTimeline() {
+                if (!this.story || !this.story.story_arc) return;
+                
+                // Create a graph of scene transitions
+                this.storyTimeline.clear();
+                
+                for (const scene of this.story.story_arc) {
+                    this.storyTimeline.set(scene.scene_id, {
+                        description: scene.description,
+                        requiredClues: scene.required_clues || [],
+                        nextScenes: scene.next_scenes || [],
+                        availableActions: scene.available_actions || []
+                    });
+                }
+            }
+            
+            /**
+             * Determine the next logical scene based on current state
+             * @param {string} currentScene Current scene ID
+             * @param {Array} discoveredClues Discovered clues
+             * @param {Object} gameProgress Game progress information
+             * @returns {string} Next scene ID
+             */
+            getNextScene(currentScene, discoveredClues, gameProgress) {
+                if (!this.storyTimeline.has(currentScene)) return currentScene;
+                
+                const sceneInfo = this.storyTimeline.get(currentScene);
+                
+                if (!sceneInfo.nextScenes || sceneInfo.nextScenes.length === 0) {
+                    return currentScene;
+                }
+                
+                // Check if all required clues for next scenes are discovered
+                for (const nextScene of sceneInfo.nextScenes) {
+                    const nextSceneInfo = this.storyTimeline.get(nextScene);
+                    
+                    if (!nextSceneInfo) continue;
+                    
+                    // Check if all required clues are discovered
+                    const allCluesDiscovered = nextSceneInfo.requiredClues.every(
+                        clue => discoveredClues.includes(clue)
+                    );
+                    
+                    if (allCluesDiscovered) {
+                        return nextScene;
+                    }
+                }
+                
+                // If no next scene is valid, stay on current scene
+                return currentScene;
+            }
+            
+            /**
+             * Validate story consistency
+             * @param {Object} gameState Current game state
+             * @returns {Array} Array of consistency issues
+             */
+            validateConsistency(gameState) {
+                const issues = [];
+                
+                // Check for scene existence
+                if (!this.storyTimeline.has(gameState.current_scene)) {
+                    issues.push(`Current scene "${gameState.current_scene}" does not exist in the story arc`);
+                }
+                
+                // Check for character references
+                for (const charId in gameState.characters) {
+                    const character = this.story.characters.find(c => c.id === charId);
+                    if (!character) {
+                        issues.push(`Character "${charId}" referenced in game state does not exist in the story`);
+                    }
+                }
+                
+                // Check for location references
+                for (const locId in gameState.locations) {
+                    const location = this.story.locations.find(l => l.id === locId);
+                    if (!location) {
+                        issues.push(`Location "${locId}" referenced in game state does not exist in the story`);
+                    }
+                }
+                
+                return issues;
+            }
+        }
+        
+        /**
+         * Character Consistency Manager
+         * Ensures characters behave consistently
+         */
+        class CharacterConsistencyManager {
+            constructor() {
+                this.characters = {};
+                this.characterTraits = new Map();
+                this.characterHistory = new Map();
+            }
+            
+            /**
+             * Set the character data
+             * @param {Array} characters Array of character objects
+             */
+            setCharacters(characters) {
+                this.characters = {};
+                for (const character of characters) {
+                    this.characters[character.id] = character;
+                    this.characterTraits.set(character.id, {
+                        personality: character.personality,
+                        relationships: character.relationships,
+                        knowledge: character.knowledge,
+                        secrets: character.secrets
+                    });
+                    this.characterHistory.set(character.id, []);
+                }
+            }
+            
+            /**
+             * Track an interaction with a character
+             * @param {string} characterId Character ID
+             * @param {string} action Type of interaction
+             * @param {string} details Details of the interaction
+             */
+            trackInteraction(characterId, action, details) {
+                if (!this.characterHistory.has(characterId)) {
+                    this.characterHistory.set(characterId, []);
+                }
+                
+                const history = this.characterHistory.get(characterId);
+                history.push({
+                    action,
+                    details,
+                    timestamp: Date.now()
+                });
+                
+                this.characterHistory.set(characterId, history);
+            }
+            
+            /**
+             * Get a character's interaction history
+             * @param {string} characterId Character ID
+             * @returns {Array} Interaction history
+             */
+            getInteractionHistory(characterId) {
+                return this.characterHistory.get(characterId) || [];
+            }
+            
+            /**
+             * Check if a character would reveal knowledge based on relationship level
+             * @param {string} characterId Character ID
+             * @param {string} knowledgeItem Knowledge item to check
+             * @param {number} relationshipLevel Relationship level (1-5)
+             * @returns {boolean} True if the character would reveal the knowledge
+             */
+            wouldRevealKnowledge(characterId, knowledgeItem, relationshipLevel) {
+                const character = this.characters[characterId];
+                if (!character) return false;
+                
+                // Check if the character knows this information
+                if (!character.knowledge.includes(knowledgeItem)) return false;
+                
+                // Check if this is a secret that requires higher relationship level
+                const isSecret = character.secrets.includes(knowledgeItem);
+                
+                if (isSecret && relationshipLevel < 4) {
+                    return false;
+                }
+                
+                return true;
+            }
+        }
+        
+        /**
+         * Dialogue Consistency Manager
+         * Ensures dialogue maintains consistency between interactions
+         */
+        class DialogueConsistencyManager {
+            constructor() {
+                this.dialogueHistory = new Map();
+                this.dialogueContext = new Map();
+            }
+            
+            /**
+             * Record a dialogue interaction
+             * @param {string} characterId Character ID
+             * @param {string} dialogue Dialogue content
+             * @param {string} emotion Character's emotion
+             * @param {Array} topics Discussed topics
+             */
+            recordDialogue(characterId, dialogue, emotion, topics) {
+                if (!this.dialogueHistory.has(characterId)) {
+                    this.dialogueHistory.set(characterId, []);
+                }
+                
+                const history = this.dialogueHistory.get(characterId);
+                history.push({
+                    dialogue,
+                    emotion,
+                    topics: topics || [],
+                    timestamp: Date.now()
+                });
+                
+                this.dialogueHistory.set(characterId, history);
+            }
+            
+            /**
+             * Get dialogue history for a character
+             * @param {string} characterId Character ID
+             * @returns {Array} Dialogue history
+             */
+            getDialogueHistory(characterId) {
+                return this.dialogueHistory.get(characterId) || [];
+            }
+            
+            /**
+             * Get dialogue context for a character
+             * @param {string} characterId Character ID
+             * @returns {Object} Dialogue context
+             */
+            getDialogueContext(characterId) {
+                return this.dialogueContext.get(characterId) || {
+                    lastTopic: null,
+                    lastEmotion: null,
+                    lastHints: [],
+                    timestamp: null
+                };
+            }
+            
+            /**
+             * Update dialogue context for a character
+             * @param {string} characterId Character ID
+             * @param {Object} context Context information
+             */
+            updateDialogueContext(characterId, context) {
+                this.dialogueContext.set(characterId, {
+                    ...this.getDialogueContext(characterId),
+                    ...context
+                });
+                
+                // Record this dialogue
+                this.recordDialogue(
+                    characterId,
+                    "Dialogue content", // This should be replaced with actual dialogue
+                    context.lastEmotion,
+                    [context.lastTopic]
+                );
+            }
+        }
+
+        // Game Engine Instance
+        const gameEngine = new AdventureGameEngine();
+
+        // DOM Elements
+        const apiKeySection = document.getElementById('apiKeySection');
+        const gameSetupSection = document.getElementById('gameSetupSection');
+        const gameSection = document.getElementById('gameSection');
+        const apiKeyInput = document.getElementById('apiKey');
+        const verifyApiKeyBtn = document.getElementById('verifyApiKey');
+        const apiKeyError = document.getElementById('apiKeyError');
+        const apiKeySuccess = document.getElementById('apiKeySuccess');
+        const gameThemeSelect = document.getElementById('gameTheme');
+        const customThemeGroup = document.getElementById('customThemeGroup');
+        const customThemeInput = document.getElementById('customTheme');
+        const playerNameInput = document.getElementById('playerName');
+        const createGameBtn = document.getElementById('createGame');
+        const gameSetupError = document.getElementById('gameSetupError');
+        const loadingGame = document.getElementById('loadingGame');
+        const gameOutput = document.getElementById('gameOutput');
+        const actionContainer = document.getElementById('actionContainer');
+        const actionTypeSelect = document.getElementById('actionType');
+        const actionTargetInput = document.getElementById('actionTarget');
+        const performActionBtn = document.getElementById('performAction');
+        const getHintBtn = document.getElementById('getHint');
+        const saveGameBtn = document.getElementById('saveGame');
+        const loadGameBtn = document.getElementById('loadGame');
+        const inventoryItems = document.getElementById('inventoryItems');
+        const clueItems = document.getElementById('clueItems');
+        const analyzeCluesBtn = document.getElementById('analyzeClues');
+        const clueAnalysis = document.getElementById('clueAnalysis');
+        const characterList = document.getElementById('characterList');
+        const gameHelp = document.getElementById('gameHelp');
+        const loadingAction = document.getElementById('loadingAction');
+        const debugConsole = document.getElementById('debugConsole');
+        const tabs = document.querySelectorAll('.tab');
+        const tabContents = document.querySelectorAll('.tab-content');
+
+        // Debug mode
+        // Enable debug mode with ALT+D
+        document.addEventListener('keydown', function(e) {
+            if (e.altKey && e.key === 'd') {
+                gameEngine.setDebugMode(!gameEngine.debugMode);
+                alert(`Debug mode ${gameEngine.debugMode ? 'enabled' : 'disabled'}`);
+            }
+        });
+
+        // Tab handling
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                const tabId = tab.getAttribute('data-tab');
+                
+                // Remove active class from all tabs and contents
+                tabs.forEach(t => t.classList.remove('active'));
+                tabContents.forEach(c => c.classList.remove('active'));
+                
+                // Add active class to selected tab and content
+                tab.classList.add('active');
+                document.getElementById(`${tabId}Tab`).classList.add('active');
+                
+                // Update relevant content
+                if (tabId === 'inventory') {
+                    updateInventoryDisplay();
+                } else if (tabId === 'clues') {
+                    updateCluesDisplay();
+                } else if (tabId === 'characters') {
+                    updateCharactersDisplay();
+                } else if (tabId === 'help') {
+                    updateHelpDisplay();
+                }
+            });
+        });
+
+        // Theme selection handling
+        gameThemeSelect.addEventListener('change', () => {
+            if (gameThemeSelect.value === 'custom') {
+                customThemeGroup.classList.remove('hidden');
+            } else {
+                customThemeGroup.classList.add('hidden');
+            }
+        });
+
+        // Verify API Key
+        verifyApiKeyBtn.addEventListener('click', async () => {
+            const apiKey = apiKeyInput.value.trim();
+            
+            if (!apiKey) {
+                showError(apiKeyError, "Please enter an API key");
+                return;
+            }
+            
+            try {
+                // Set and verify API key
+                gameEngine.setApiKey(apiKey);
+                verifyApiKeyBtn.disabled = true;
+                verifyApiKeyBtn.textContent = "Verifying...";
+                
+                await gameEngine.verifyApiKey();
+                
+                // Success
+                apiKeyError.classList.add('hidden');
+                apiKeySuccess.textContent = "API key verified successfully!";
+                apiKeySuccess.classList.remove('hidden');
+                
+                // Show game setup section
+                setTimeout(() => {
+                    apiKeySection.style.display = 'none';
+                    gameSetupSection.style.display = 'block';
+                }, 1000);
+            } catch (error) {
+                showError(apiKeyError, error.message);
+                verifyApiKeyBtn.disabled = false;
+                verifyApiKeyBtn.textContent = "Verify API Key";
+            }
+        });
+
+        // Create Game
+        createGameBtn.addEventListener('click', async () => {
+            let theme = gameThemeSelect.value;
+            
+            if (theme === 'custom') {
+                theme = customThemeInput.value.trim();
+                
+                if (!theme) {
+                    showError(gameSetupError, "Please enter a custom theme");
+                    return;
+                }
+            }
+            
+            const playerName = playerNameInput.value.trim() || "Detective";
+            
+            try {
+                // Start creating game
+                createGameBtn.disabled = true;
+                gameSetupError.classList.add('hidden');
+                loadingGame.style.display = 'block';
+                
+                // Create the game
+                const initialScene = await gameEngine.createGame(theme, playerName);
+                
+                // Display initial scene
+                updateGameDisplay();
+                
+                // Show game section
+                gameSetupSection.style.display = 'none';
+                gameSection.style.display = 'block';
+                
+            } catch (error) {
+                showError(gameSetupError, `Error creating game: ${error.message}`);
+                createGameBtn.disabled = false;
+                loadingGame.style.display = 'none';
+            }
+        });
+
+        // Perform Custom Action
+        performActionBtn.addEventListener('click', async () => {
+            const actionType = actionTypeSelect.value;
+            const target = actionTargetInput.value.trim();
+            
+            if (!target) {
+                alert("Please enter a target for your action");
+                return;
+            }
+            
+            await performAction(actionType, target);
+        });
+
+        // Get Hint
+        getHintBtn.addEventListener('click', async () => {
+            try {
+                loadingAction.style.display = 'block';
+                const hint = await gameEngine.getHint();
+                loadingAction.style.display = 'none';
+                
+                // Update game display
+                updateGameDisplay();
+                
+                // Show hint in a special way
+                appendToGameOutput(`<div style="background-color: #2a3950; padding: 15px; border-radius: 5px; margin: 10px 0; border-left: 4px solid #ffc107;">
+                    <strong>HINT:</strong> ${hint.hint}
+                </div>`);
+            } catch (error) {
+                console.error("Error getting hint:", error);
+                loadingAction.style.display = 'none';
+                alert(`Error getting hint: ${error.message}`);
+            }
+        });
+
+        // Save Game
+        saveGameBtn.addEventListener('click', () => {
+            try {
+                const savedState = gameEngine.saveGameState();
+                localStorage.setItem('adventure_game_save', savedState);
+                alert("Game saved successfully!");
+            } catch (error) {
+                console.error("Error saving game:", error);
+                alert(`Error saving game: ${error.message}`);
+            }
+        });
+
+        // Load Game
+        loadGameBtn.addEventListener('click', () => {
+            try {
+                const savedState = localStorage.getItem('adventure_game_save');
+                
+                if (!savedState) {
+                    alert("No saved game found!");
+                    return;
+                }
+                
+                const result = gameEngine.loadGameState(savedState);
+                
+                if (result.success) {
+                    alert("Game loaded successfully!");
+                    
+                    // Update all displays
+                    updateGameDisplay();
+                    updateInventoryDisplay();
+                    updateCluesDisplay();
+                    updateCharactersDisplay();
+                    
+                    // Ensure game section is visible
+                    apiKeySection.style.display = 'none';
+                    gameSetupSection.style.display = 'none';
+                    gameSection.style.display = 'block';
+                } else {
+                    alert(`Error loading game: ${result.message}`);
+                }
+            } catch (error) {
+                console.error("Error loading game:", error);
+                alert(`Error loading game: ${error.message}`);
+            }
+        });
+
+        // Analyze Clues
+        analyzeCluesBtn.addEventListener('click', async () => {
+            try {
+                analyzeCluesBtn.disabled = true;
+                analyzeCluesBtn.textContent = "Analyzing...";
+                
+                const analysis = await gameEngine.analyzeClues();
+                
+                // Display analysis
+                clueAnalysis.innerHTML = `
+                    <h4>Clue Analysis</h4>
+                    <p>${analysis.analysis}</p>
+                    
+                    <h5>Connections</h5>
+                    <ul>
+                        ${analysis.connections.map(conn => `<li>${conn}</li>`).join('')}
+                    </ul>
+                    
+                    <h5>Theories</h5>
+                    <ul>
+                        ${analysis.theories.map(theory => `<li>${theory}</li>`).join('')}
+                    </ul>
+                    
+                    <h5>Next Steps</h5>
+                    <ul>
+                        ${analysis.next_investigations.map(step => `<li>${step}</li>`).join('')}
+                    </ul>
+                `;
+                
+                clueAnalysis.classList.remove('hidden');
+                
+                // Update game display
+                updateGameDisplay();
+                
+                analyzeCluesBtn.disabled = false;
+                analyzeCluesBtn.textContent = "Analyze Clues";
+            } catch (error) {
+                console.error("Error analyzing clues:", error);
+                alert(`Error analyzing clues: ${error.message}`);
+                analyzeCluesBtn.disabled = false;
+                analyzeCluesBtn.textContent = "Analyze Clues";
+            }
+        });
+
+        // Helper Functions
+
+        /**
+         * Show an error message
+         * @param {Element} element Error element
+         * @param {string} message Error message
+         */
+        function showError(element, message) {
+            element.textContent = message;
+            element.classList.remove('hidden');
+        }
+
+        /**
+         * Update the game display
+         */
+        function updateGameDisplay() {
+            if (!gameEngine.gameState) return;
+            
+            // Clear previous output
+            gameOutput.innerHTML = '';
+            
+            // Display messages
+            for (const message of gameEngine.gameState.messages) {
+                appendMessageToOutput(message);
+            }
+            
+            // Display available actions
+            updateAvailableActions();
+            
+            // Update other displays
+            updateInventoryDisplay();
+            updateCluesDisplay();
+            updateCharactersDisplay();
+        }
+
+        /**
+         * Append a message to the game output
+         * @param {Object} message Message object
+         */
+        function appendMessageToOutput(message) {
+            let html = '';
+            
+            switch (message.type) {
+                case 'system':
+                    if (message.hint) {
+                        html = `<div style="background-color: #2a3950; padding: 15px; border-radius: 5px; margin: 10px 0; border-left: 4px solid #ffc107;">
+                            <strong>HINT:</strong> ${message.content}
+                        </div>`;
+                    } else if (message.item) {
+                        html = `<div style="background-color: #2a3950; padding: 15px; border-radius: 5px; margin: 10px 0; border-left: 4px solid #5cb85c;">
+                            <strong>ITEM ACQUIRED:</strong> ${message.content}
+                        </div>`;
+                    } else if (message.clue) {
+                        html = `<div style="background-color: #2a3950; padding: 15px; border-radius: 5px; margin: 10px 0; border-left: 4px solid #5bc0be;">
+                            <strong>CLUE DISCOVERED:</strong> ${message.content}
+                        </div>`;
+                    } else if (message.completion) {
+                        html = `<div style="background-color: #2a3950; padding: 15px; border-radius: 5px; margin: 10px 0; border-left: 4px solid #d4af37;">
+                            <strong>GAME COMPLETED:</strong> ${message.content}
+                        </div>`;
+                    } else {
+                        html = `<div style="color: #6fffe9; margin: 5px 0;">${message.content}</div>`;
+                    }
+                    break;
+                    
+                case 'narrative':
+                    html = `<div class="narrative" style="margin: 10px 0;">${message.content}</div>`;
+                    break;
+                    
+                case 'player':
+                    html = `<div style="color: #5bc0be; margin: 5px 0;"><strong>You:</strong> ${message.action} ${message.target}</div>`;
+                    break;
+                    
+                case 'character':
+                    html = `<div class="character-dialog">
+                        <div class="character-name">${message.character}:</div>
+                        <div>${message.content}</div>
+                    </div>`;
+                    break;
+                    
+                default:
+                    html = `<div>${message.content}</div>`;
+            }
+            
+            appendToGameOutput(html);
+        }
+
+        /**
+         * Append HTML to game output and scroll to bottom
+         * @param {string} html HTML to append
+         */
+        function appendToGameOutput(html) {
+            gameOutput.innerHTML += html;
+            gameOutput.scrollTop = gameOutput.scrollHeight;
+        }
+
+        /**
+         * Update available actions display
+         */
+        function updateAvailableActions() {
+            actionContainer.innerHTML = '';
+            
+            if (!gameEngine.gameState || !gameEngine.gameState.available_actions) return;
+            
+            for (const actionItem of gameEngine.gameState.available_actions) {
+                const actionBtn = document.createElement('button');
+                actionBtn.className = 'action-btn';
+                
+                if (typeof actionItem === 'string') {
+                    // For string actions like "手紙を調べる"
+                    actionBtn.textContent = actionItem;
+                    
+                    // Parse the action based on the text
+                    let actionType = 'examine'; // Default action
+                    let actionTarget = actionItem;
+                    
+                    // Check for common action patterns in Japanese
+                    if (actionItem.includes('調べる')) {
+                        actionType = 'examine';
+                        actionTarget = actionItem.replace('調べる', '').replace('を', '').trim();
+                    } else if (actionItem.includes('読む')) {
+                        actionType = 'look';
+                        actionTarget = actionItem.replace('読む', '').replace('を', '').trim();
+                    } else if (actionItem.includes('取る')) {
+                        actionType = 'take';
+                        actionTarget = actionItem.replace('取る', '').replace('を', '').trim();
+                    } else if (actionItem.includes('探す')) {
+                        actionType = 'search';
+                        actionTarget = actionItem.replace('探す', '').replace('を', '').trim();
+                    }
+                    
+                    actionBtn.addEventListener('click', () => {
+                        performAction(actionType, actionTarget);
+                    });
+                } else {
+                    // For object actions with action and target properties
+                    actionBtn.textContent = `${actionItem.action} ${actionItem.target}`;
+                    actionBtn.title = actionItem.description;
+                    
+                    actionBtn.addEventListener('click', () => {
+                        performAction(actionItem.action, actionItem.target);
+                    });
+                }
+                
+                actionContainer.appendChild(actionBtn);
+            }
+        }
+
+        /**
+         * Perform an action
+         * @param {string} action Action type
+         * @param {string} target Target of the action
+         */
+        async function performAction(action, target) {
+            try {
+                performActionBtn.disabled = true;
+                loadingAction.style.display = 'block';
+                
+                // アクションを処理
+                const result = await gameEngine.processAction(action, target);
+                
+                // ゲーム状態を更新
+                gameEngine.gameState = result;
+                
+                // アクション入力欄をクリア
+                actionTargetInput.value = '';
+                
+                // ゲーム表示を更新
+                updateGameDisplay();
+                
+                // インベントリ表示を更新
+                updateInventoryDisplay();
+                
+                // 手がかり表示を更新
+                updateCluesDisplay();
+                
+                // キャラクター表示を更新
+                updateCharactersDisplay();
+                
+                // ゲームの完了状態をチェック
+                const completion = await gameEngine.checkGameCompletion();
+                if (completion.is_completed) {
+                    appendToGameOutput(`<div style="background-color: #2a3950; padding: 15px; border-radius: 5px; margin: 10px 0; border-left: 4px solid #d4af37;">
+                        <strong>GAME COMPLETED!</strong><br>
+                        ${completion.final_summary}
+                    </div>`);
+                }
+                
+                loadingAction.style.display = 'none';
+                performActionBtn.disabled = false;
+            } catch (error) {
+                console.error("アクション実行エラー:", error);
+                alert(`エラー: ${error.message}`);
+                loadingAction.style.display = 'none';
+                performActionBtn.disabled = false;
+            }
+        }
+
+        /**
+         * Update inventory display
+         */
+        function updateInventoryDisplay() {
+            inventoryItems.innerHTML = '';
+            
+            if (!gameEngine.gameState) return;
+            
+            const inventory = gameEngine.getInventory();
+            
+            if (inventory.length === 0) {
+                inventoryItems.innerHTML = '<p>Your inventory is empty.</p>';
+                return;
+            }
+            
+            for (const item of inventory) {
+                const itemElement = document.createElement('div');
+                itemElement.className = 'inventory-item';
+                itemElement.innerHTML = `<h4>${item}</h4>`;
+                
+                // Add action buttons
+                const actionButtonsContainer = document.createElement('div');
+                actionButtonsContainer.style.marginTop = '10px';
+                
+                const examineBtn = document.createElement('button');
+                examineBtn.textContent = 'Examine';
+                examineBtn.className = 'action-btn';
+                examineBtn.addEventListener('click', () => {
+                    performAction('examine', item);
+                });
+                
+                const useBtn = document.createElement('button');
+                useBtn.textContent = 'Use';
+                useBtn.className = 'action-btn';
+                useBtn.style.marginLeft = '10px';
+                useBtn.addEventListener('click', () => {
+                    const target = prompt('What would you like to use this item on?');
+                    if (target) {
+                        performAction('use', `${item} on ${target}`);
+                    }
+                });
+                
+                actionButtonsContainer.appendChild(examineBtn);
+                actionButtonsContainer.appendChild(useBtn);
+                itemElement.appendChild(actionButtonsContainer);
+                
+                inventoryItems.appendChild(itemElement);
+            }
+        }
+
+        /**
+         * Update clues display
+         */
+        function updateCluesDisplay() {
+            clueItems.innerHTML = '';
+            
+            if (!gameEngine.gameState) return;
+            
+            const clues = gameEngine.getDiscoveredClues();
+            
+            if (clues.length === 0) {
+                clueItems.innerHTML = '<p>You haven\'t discovered any clues yet.</p>';
+                clueAnalysis.classList.add('hidden');
+                return;
+            }
+            
+            for (const clueId of clues) {
+                // 手がかりの詳細を見つける（IDまたは名前で検索）
+                let clueDetails = gameEngine.story.clues.find(c => c.id === clueId);
+                
+                // IDで見つからない場合は名前で検索
+                if (!clueDetails) {
+                    clueDetails = gameEngine.story.clues.find(c => c.name === clueId);
+                }
+                
+                if (!clueDetails) {
+                    console.warn(`Clue not found: ${clueId}`);
+                    continue;
+                }
+                
+                const clueElement = document.createElement('div');
+                clueElement.className = 'clue-item';
+                
+                clueElement.innerHTML = `
+                    <h4>${clueDetails.name}</h4>
+                    <p>${clueDetails.description}</p>
+                    <div><strong>Importance:</strong> ${'★'.repeat(clueDetails.importance)}</div>
+                `;
+                
+                clueItems.appendChild(clueElement);
+            }
+        }
+
+        /**
+         * Update characters display
+         */
+        function updateCharactersDisplay() {
+    characterList.innerHTML = '';
+    
+    if (!gameEngine.gameState) return;
+    
+    // Check if game_progress exists
+    if (!gameEngine.gameState.game_progress) {
+        gameEngine.gameState.game_progress = {};
+    }
+    
+    // Only show characters the player has met
+    const metCharacters = gameEngine.gameState.game_progress.met_characters || [];
+    
+    console.log("Met characters:", metCharacters);
+    
+    if (metCharacters.length === 0) {
+        // If no characters have been met explicitly, try showing all characters from current location
+        const currentScene = gameEngine.gameState.current_scene;
+        const currentLocation = Object.values(gameEngine.gameState.locations).find(
+            loc => loc.id === currentScene || loc.connected_locations.includes(currentScene)
+        );
+        
+        if (currentLocation && currentLocation.characters && currentLocation.characters.length > 0) {
+            // Show characters in current location
+            for (const characterId of currentLocation.characters) {
+                renderCharacterElement(characterId);
+            }
+            return;
+        }
+        
+        characterList.innerHTML = '<p>You haven\'t met any characters yet.</p>';
+        return;
+    }
+    
+    // Render characters the player has met
+    for (const characterId of metCharacters) {
+        renderCharacterElement(characterId);
+    }
+    
+    // Helper function to render a character element
+    function renderCharacterElement(characterId) {
+        let character = gameEngine.getCharacterInfo(characterId);
+
+        // 名前で検索してIDを逆引き
+        if (!character) {
+            const charObj = Object.values(gameEngine.gameState.characters).find(
+                c => c.name === characterId
+            );
+            if (charObj) character = charObj;
+        }
+
+        if (!character) {
+            console.warn(`Character not found: ${characterId}`);
+            return;
+        }
+        
+        const characterElement = document.createElement('div');
+        characterElement.className = 'character-item';
+        characterElement.style.backgroundColor = '#2a3950';
+        characterElement.style.padding = '15px';
+        characterElement.style.marginBottom = '15px';
+        characterElement.style.borderRadius = '5px';
+        
+        characterElement.innerHTML = `
+            <h4>${character.name}</h4>
+            <p><strong>Age:</strong> ${character.age}</p>
+            <p><strong>Occupation:</strong> ${character.occupation}</p>
+            <p><strong>Description:</strong> ${character.description}</p>
+        `;
+        
+        // Add talk button
+        const talkBtn = document.createElement('button');
+        talkBtn.textContent = 'Talk to this character';
+        talkBtn.className = 'action-btn';
+        talkBtn.addEventListener('click', () => {
+            performAction('talk', character.id);
+        });
+        
+        characterElement.appendChild(talkBtn);
+        
+        // Add ask button
+        const askBtn = document.createElement('button');
+        askBtn.textContent = 'Ask about...';
+        askBtn.className = 'action-btn';
+        askBtn.style.marginLeft = '10px';
+        askBtn.addEventListener('click', () => {
+            const topic = prompt('What would you like to ask about?');
+            if (topic) {
+                performAction('ask', `${character.id} about ${topic}`);
+            }
+        });
+        
+        characterElement.appendChild(askBtn);
+        
+        characterList.appendChild(characterElement);
+    }
+}
+
+        /**
+         * Update help display
+         */
+        async function updateHelpDisplay() {
+            try {
+                const helpInfo = await gameEngine.getGameHelp();
+                
+                gameHelp.innerHTML = `
+                    <h4>Available Actions</h4>
+                    <ul>
+                        ${Object.entries(helpInfo.available_actions).map(([action, desc]) => 
+                            `<li><strong>${action}:</strong> ${desc}</li>`
+                        ).join('')}
+                    </ul>
+                    
+                    <h4>Game Mechanics</h4>
+                    <ul>
+                        ${Object.entries(helpInfo.game_mechanics).map(([mechanic, desc]) => 
+                            `<li><strong>${mechanic}:</strong> ${desc}</li>`
+                        ).join('')}
+                    </ul>
+                    
+                    <h4>Tips</h4>
+                    <ul>
+                        ${helpInfo.tips.map(tip => `<li>${tip}</li>`).join('')}
+                    </ul>
+                `;
+            } catch (error) {
+                console.error("Error getting help:", error);
+                gameHelp.innerHTML = '<p>Error loading help information.</p>';
+            }
+        }
+    </script>
+</body>
+</html>

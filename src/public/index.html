@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Adventure Game</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>AI Adventure Game</h1>
+            <p>An immersive narrative adventure game powered by AI</p>
+        </header>
+
+        <!-- API Key Section -->
+        <section id="apiKeySection" class="api-key-section">
+            <h2>Setup Your Adventure</h2>
+            <p>To start your adventure, please enter your OpenAI API key.</p>
+            
+            <div class="input-group">
+                <label for="apiKey">OpenAI API Key:</label>
+                <input type="password" id="apiKey" placeholder="sk-...">
+            </div>
+            
+            <div id="apiKeyError" class="error-message hidden"></div>
+            <div id="apiKeySuccess" class="success-message hidden"></div>
+            
+            <button id="verifyApiKey">Verify API Key</button>
+        </section>
+
+        <!-- Game Setup Section -->
+        <section id="gameSetupSection" class="game-section">
+            <h2>Create Your Adventure</h2>
+            
+            <div class="game-setup">
+                <div class="input-group">
+                    <label for="gameTheme">Theme:</label>
+                    <select id="gameTheme">
+                        <option value="murder-mystery">Murder Mystery</option>
+                        <option value="fantasy-adventure">Fantasy Adventure</option>
+                        <option value="sci-fi-exploration">Sci-Fi Exploration</option>
+                        <option value="detective-noir">Detective Noir</option>
+                        <option value="supernatural-horror">Supernatural Horror</option>
+                        <option value="historical-mystery">Historical Mystery</option>
+                        <option value="custom">Custom Theme...</option>
+                    </select>
+                </div>
+                
+                <div id="customThemeGroup" class="input-group hidden">
+                    <label for="customTheme">Custom Theme:</label>
+                    <input type="text" id="customTheme" placeholder="Enter your custom theme">
+                </div>
+                
+                <div class="input-group">
+                    <label for="playerName">Your Character Name (optional):</label>
+                    <input type="text" id="playerName" placeholder="Detective Smith">
+                </div>
+                
+                <div id="gameSetupError" class="error-message hidden"></div>
+                
+                <button id="createGame">Create Game</button>
+            </div>
+            
+            <div id="loadingGame" class="loading">
+                <p>Crafting your adventure...</p>
+                <div class="loading-spinner"></div>
+                <p>This might take a minute. Preparing story elements, characters, and setting...</p>
+            </div>
+        </section>
+
+        <!-- Game Interface Section -->
+        <section id="gameSection" class="game-section">
+            <div class="tabs">
+                <div class="tab active" data-tab="game">Game</div>
+                <div class="tab" data-tab="inventory">Inventory</div>
+                <div class="tab" data-tab="clues">Clues</div>
+                <div class="tab" data-tab="characters">Characters</div>
+                <div class="tab" data-tab="help">Help</div>
+            </div>
+            
+            <div id="gameTab" class="tab-content active">
+                <div class="game-output" id="gameOutput"></div>
+                
+                <div class="action-container" id="actionContainer"></div>
+                
+                <div id="customActions" class="input-group">
+                    <label for="customAction">Custom Action:</label>
+                    <div style="display: flex; gap: 10px;">
+                        <select id="actionType" style="flex: 1;">
+                            <option value="move">Move to</option>
+                            <option value="examine">Examine</option>
+                            <option value="search">Search</option>
+                            <option value="ask">Ask about</option>
+                            <option value="talk">Talk to</option>
+                            <option value="take">Take</option>
+                            <option value="look">Look at</option>
+                            <option value="show">Show</option>
+                            <option value="call">Call</option>
+                        </select>
+                        <input type="text" id="actionTarget" placeholder="Target" style="flex: 2;">
+                        <button id="performAction">Do Action</button>
+                    </div>
+                </div>
+                
+                <div class="game-controls">
+                    <button id="getHint">Get Hint</button>
+                    <button id="saveGame">Save Game</button>
+                    <button id="loadGame">Load Game</button>
+                </div>
+            </div>
+            
+            <div id="inventoryTab" class="tab-content">
+                <h3>Your Inventory</h3>
+                <div id="inventoryItems"></div>
+            </div>
+            
+            <div id="cluesTab" class="tab-content">
+                <h3>Discovered Clues</h3>
+                <div id="clueItems"></div>
+                <button id="analyzeClues">Analyze Clues</button>
+                <div id="clueAnalysis" class="hidden"></div>
+            </div>
+            
+            <div id="charactersTab" class="tab-content">
+                <h3>Characters</h3>
+                <div id="characterList"></div>
+            </div>
+            
+            <div id="helpTab" class="tab-content">
+                <h3>Game Help</h3>
+                <div id="gameHelp"></div>
+            </div>
+            
+            <div id="loadingAction" class="loading">
+                <div class="loading-spinner"></div>
+                <p>Processing your action...</p>
+            </div>
+        </section>
+
+        <!-- Debug Console (hidden by default) -->
+        <div id="debugConsole" class="debug-console"></div>
+    </div>
+
+    <script src="js/main.js"></script>
+</body>
+</html>
